@@ -55,6 +55,7 @@ def process_search_page(page_index, df):
         tag = row.find("span", class_="date").next_sibling.next_sibling#
         title = tag.text
         model = find_model(title, models)
+        print("hi")
 
         if price_tag and model:
             price = int(price_tag.text.replace('$',''))
