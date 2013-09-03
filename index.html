@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="bootstrap-3.0.0/assets/ico/favicon.png">
+
+    <title>DealSpotter - Find rare deals on Craigslist... the easy way</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/jumbotron-narrow.css" rel="stylesheet">
+
+    <link type="text/css"  rel="Stylesheet" href="css/styles.css">
+    <script type="text/javascript" src="d3/d3.v3.min.js"></script>
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="../../assets/js/html5shiv.js"></script>
+      <script src="../../assets/js/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="container">
+      <div class="header">
+        <ul class="nav nav-pills pull-right">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+        <h3 class="text-muted">DealSpotter</h3>
+      </div>
+
+      <div class="jumbotron">
+        <h1>DealSpotter</h1>
+        <p class="lead">Find rare deals on Craigslist... the easy way.</p>
+        <p><a class="btn btn-lg btn-success" href="#">Sign up today</a></p>
+      </div>
+
+      <div id="svg_container"></div>
+
+      <div class="row marketing">
+        <div class="col-lg-6">
+          <h4>Subheading</h4>
+          <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
+
+          <h4>Subheading</h4>
+          <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
+
+          <h4>Subheading</h4>
+          <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+        </div>
+
+        <div class="col-lg-6">
+          <h4>Subheading</h4>
+          <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
+
+          <h4>Subheading</h4>
+          <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
+
+          <h4>Subheading</h4>
+          <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>&copy; Chris Said 2013</p>
+      </div>
+
+    </div> <!-- /container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript">
+
+      //SVG Width and height
+      var w = 500;
+      var h = 280;
+      var padding = 35;
+      var data = []
+      data[0] = {x: 0, y: 7}
+      data[1] = {x: 1, y: 5}
+      data[2] = {x: 2, y: 6}
+      data[3] = {x: 3, y: 4}
+      data[4] = {x: 4, y: 5}
+      data[5] = {x: 5, y: 3}
+
+      d3.xml("car.svg", "image/svg+xml", function(xml) {
+        var importedNode = document.importNode(xml.documentElement, true);
+        var importedWidth  = importedNode.width.animVal.value
+        var importedHeight = importedNode.height.animVal.value
+        console.log(importedNode)
+        console.log(importedNode.height.animVal)
+        console.log(importedHeight)
+
+        //Create X scale
+        var xScale = d3.scale.linear()
+                    .domain([d3.min(data, function(d) { return d.x; }),
+                             d3.max(data, function(d) { return d.x; })])
+                    .range([padding, w - padding * 2]);
+        //Create Y scale
+        var yScale = d3.scale.linear()
+                    .domain([d3.min(data, function(d) { return d.y; }),
+                             d3.max(data, function(d) { return d.y; })])
+                    .range([h - padding, padding]);
+
+        //Define X axis
+        var xAxis = d3.svg.axis()
+                          .scale(xScale)
+                          .orient("bottom")
+                          .ticks(5);
+        //Define Y axis
+        var yAxis = d3.svg.axis()
+                          .scale(yScale)
+                          .orient("left")
+                          .ticks(5);
+        //Create SVG element
+        var svg = d3.select("#svg_container")
+                          .append("svg")
+                          .attr("width", w)
+                          .attr("height", h);
+
+        //Create circles
+        svg.selectAll("g")
+          .data(data)
+          .enter()
+          .append("g")
+          .attr("transform", function(d, i){
+            return "translate(" + xScale(d.x) + ","
+            + yScale(d.y) + ")"
+            + " scale(" + .4 + ")";
+          })
+          .each(function(d, i) {
+            var car = this.appendChild(importedNode.cloneNode(true));
+            d3.select(car).select("path");
+          });
+
+
+//        $('svg circle').tipsy({
+//          gravity: 'w',
+//          html: true,
+//          title: function() {
+//               return this.__data__.name;}
+//        });
+        //Create X axis
+        svg.append("g")
+           .attr("class", "axis")
+           .attr("transform", "translate(0," + (h - padding) + ")")
+           .call(xAxis);
+        //Create Y axis
+        svg.append("g")
+           .attr("class", "axis")
+           .attr("transform", "translate(" + padding + ",0)")
+           .call(yAxis);
+        //Create X label
+        svg.append("text")
+          .attr("class", "axis_label")
+          .attr("text-anchor", "middle")
+          .attr("x", (w)/2)
+          .attr("y", h - padding + 32)
+          .text("Year");
+        //Create Y label
+        svg.append("text")
+          .attr("class", "axis_label")
+          .attr("text-anchor", "middle")
+          .attr("x", -140)
+          .attr("y", 10)
+          .attr("transform", "rotate(-90)")
+          .text("Miles");
+      });
+    </script>
+  </body>
+</html>
