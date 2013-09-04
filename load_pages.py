@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import urllib2
 import re
 import pickle
+import time
 from pandas import DataFrame, Series
 import pandas as pd
 from os import sys
@@ -36,10 +37,22 @@ def find_year(s):
     if result:
         return int(result.group(1))
 
+
 def find_model(s, models):
     for word in s.lower().split():
         if word in models:
             return word
+
+
+def find_lat_lon(soup):
+    leaflet = soup.find(id="leaflet")
+    if leaflet:
+        lat = float(leaflet.attrs['data-latitude'])
+        lon = float(leaflet.attrs['data-longitude'])
+        return lat, lon
+    else:
+        return None, None
+
 
 def process_search_page(page_index, df):
     url_root = "http://sfbay.craigslist.org"
@@ -55,17 +68,21 @@ def process_search_page(page_index, df):
         tag = row.find("span", class_="date").next_sibling.next_sibling#
         title = tag.text
         model = find_model(title, models)
-        print("hi")
 
         if price_tag and model:
             price = int(price_tag.text.replace('$',''))
 
             car_link = tag["href"]
 
+            time.sleep(0.5)
+
             car_page = urllib2.urlopen(url_root + car_link)
 
             soup = BeautifulSoup(car_page)
             body = soup.find(id="postingbody").text
+
+            # Find latitude and longitude
+            lat, lon = find_lat_lon(soup)
 
             # Find miles
             miles = find_miles(title)
@@ -79,7 +96,13 @@ def process_search_page(page_index, df):
 
 
             if year and miles:
-                df_row = DataFrame([{'year':year, 'model':model, 'price':price, 'miles':miles, 'url':car_link}])
+                df_row = DataFrame([{'year': year,
+                                     'model': model,
+                                     'price': price,
+                                     'miles': miles,
+                                     'lat': lat,
+                                     'lon': lon,
+                                     'url':car_link}])
                 df = df.append(df_row,  ignore_index=True)
 
 
@@ -89,8 +112,8 @@ def process_search_page(page_index, df):
 def main():
 
     if (sys.argv[1] == 'scrape'):
-        df = DataFrame(columns=['year', 'model', 'price', 'miles', 'url'])
-        for page_index in range(0,5000,100):
+        df = DataFrame(columns=['year', 'model', 'price', 'miles', 'lat', 'lon', 'url'])
+        for page_index in range(0,300,100):
             print(page_index)
             df = process_search_page(page_index, df)
 
