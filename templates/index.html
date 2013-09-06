@@ -2,7 +2,13 @@
 <html lang="en" xmlns:xlink="http://www.w3.org/1999/xlink">
   <head>
     <meta charset="utf-8">
+    <!--The Bootstrap way... apparently necessary for scaling to devices..
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    -->
+
+    <!--The Google Maps viewport-->
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+
     <meta name="description" content="">
     <meta name="author" content="">
 
@@ -20,6 +26,9 @@
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/jquery-1.8.1.min.js"> </script>
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/jquery.tipsy.js"></script>
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/dropdown.js"></script>
+    <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/button.js"></script>
+    <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/collapse.js"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyB_7WOaZYs-4ME_GWLNUfdRQJhPSsyin_U&sensor=false"></script>
 
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/d3.v3.min.js"></script>
 
@@ -31,6 +40,8 @@
   </head>
 
   <body>
+
+
 
     <div class="container">
       <div class="header">
@@ -48,13 +59,13 @@
               <ul class="nav nav-pills">
                 <li class="dropdown">
                   <a id="drop1" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Select a model<b class="caret"></b></a>
-                  <ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
-                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Honda Accord</a></li>
-                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Toyota Corolla</a></li>
-                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Honda Civic</a></li>
+                  <ul id="select-car" class="dropdown-menu" role="menu" aria-labelledby="drop1">
+                    <li role="presentation"><a role="menuitem" tabindex="-1" value="accord" id="accord" href="/accord">Honda Accord</a></li>
+                    <li role="presentation"><a role="menuitem" tabindex="-1" value="corolla" id="corolla" href="/corolla">Toyota Corolla</a></li>
+                    <li role="presentation"><a role="menuitem" tabindex="-1" value="civic" id="civic" href="/civic">Honda Civic</a></li>
                   </ul>
                 </li>
-
+<!--
                 <li class="dropdown">
                   <a id="drop1" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Select a view<b class="caret"></b></a>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
@@ -63,20 +74,49 @@
                     <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Graph</a></li>
                   </ul>
                 </li>
+-->
               </ul>
+
+
+              <div class="btn-group" data-toggle="buttons">
+                <label class="btn btn-primary container-toggler" data-container-id="#list-container">
+                  <input type="radio" name="options" id="option1"> List
+                </label>
+                <label class="btn btn-primary container-toggler" data-container-id="#map_canvas">
+                  <input type="radio" name="options" id="option2"> Map
+                </label>
+                <label class="btn btn-primary container-toggler" data-container-id="#graph-container">
+                  <input type="radio" name="options" id="option3"> Graph
+                </label>
+              </div>
 
 
           </nav> <!-- /navbar-example -->
 
         </div> <!-- /starter-template -->
 
-        <div id="svg_container"></div>
-
-      </div>
 
 
-      <div class="footer">
-        <p>&copy; Chris Said 2013</p>
+        <div>
+          <!-- May want to set style="display:none;" on these... -->
+          <div id="list-container"  class="container-toggle">
+            <table id="table" class="table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Year</th>
+                  <th>Miles</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody id="table_body">
+              </tbody>
+            </table></div>
+          <div id="map_canvas"   class="container-toggle"></div>
+          <div id="graph-container" class="container-toggle"></div>
+        </div>
+
+
       </div>
 
     </div> <!-- /container -->
@@ -87,121 +127,245 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script type="text/javascript">
 
+
+
+
       //SVG Width and height
       var w = 600;
       var h = 380;
       var padding = 65; //dist between svg edge and axis, I think
       var carScale = .4
-      var data = []
-      data[0] = {x: 1999, y: 100000,  price: 25000,  url: "http://www.craigslist.com"}
-      data[1] = {x: 2000, y: 120000,  price: 25000,  url: "http://www.craigslist.com"}
-      data[2] = {x: 2001, y: 100000,  price: 7000,   url: "http://www.craigslist.com"}
-      data[3] = {x: 2002, y: 110000,  price: 11000,  url: "http://www.craigslist.com"}
-      data[4] = {x: 2003, y: 90000,   price: 6000,   url: "http://www.craigslist.com"}
-      data[5] = {x: 2004, y: 100000,  price: 5000,   url: "http://www.craigslist.com"}
-      data[6] = {x: 2005, y: 80000,   price: 25000,  url: "http://www.craigslist.com"}
-      data[7] = {x: 2001, y: 70000,   price: 11000,  url: "http://www.craigslist.com"}
-      data[8] = {x: 2004, y: 90000,   price: 5000,   url: "http://www.craigslist.com"}
-      data[9] = {x: 2005, y: 120000,  price: 25000,  url: "http://www.craigslist.com"}
+      //var data = '{{ data }}'
+      var path
+      var goodColor = '#5AC9E9'
+      var badColor = '#dddddd'
+      var badColor_map = '#bbbbbb'
+      var url_root = 'http://sfbay.craigslist.org'
 
-      d3.xml("{{ config["APP_URL"] }}/static/img/car.svg", "image/svg+xml", function(xml) {
-
-        var importedNode = document.importNode(xml.documentElement, true);
-        var carWidth  = importedNode.firstElementChild.width.animVal.value * carScale;
-        var carHeight = importedNode.firstElementChild.height.animVal.value * carScale;
+      function commaSeparateNumber(val){
+        while (/(\d+)(\d{3})/.test(val.toString())){
+          val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+        }
+        return val;
+      }
 
 
-        //Create X scale
-        var xScale = d3.scale.linear()
-                    .domain([d3.min(data, function(d) { return d.x; }) - 1,
-                             d3.max(data, function(d) { return d.x; }) + 1])
-                    .range([padding, w - padding]);
-        //Create Y scale
-        var yScale = d3.scale.linear()
-                    .domain([d3.min(data, function(d) { return d.y; }) - 10000,
-                             d3.max(data, function(d) { return d.y; }) + 10000])
-                    .range([h - padding, padding]);
+      //takes a function name as an argument. The function takes data as an argument
+      var data
+      $.getJSON('{{ config["APP_URL"] }}/data', function(d) {
+        data = d.items
 
-        //Define X axis
-        var xAxis = d3.svg.axis()
-                          .scale(xScale)
-                          .orient("bottom")
-                          .ticks(5)
-                          .tickFormat(d3.format(".0f"));
-        //Define Y axis
-        var yAxis = d3.svg.axis()
-                          .scale(yScale)
-                          .orient("left")
-                          .ticks(5)
-                          .tickFormat(function(d) { return d/1000+"K"; });
-        //Create SVG element
-        var svg = d3.select("#svg_container")
-                          .append("svg")
-                          .attr("width", w)
-                          .attr("height", h)
-                          .attr("class", "center");
 
-        //Create circles
-        svg.selectAll("g")
-          .data(data)
-          .enter()
-          .append("svg:a")
-          .attr("xlink:href", function(d) {
-                return d.url;
-          })
-          .attr("target", "_blank")
-          .append("g")
-          .attr("class", "car")
-          .attr("transform", function(d, i){
-            return "translate(" + (xScale(d.x) - carWidth/2) + ","
-            + (yScale(d.y) - carHeight/2) + ")"
-            + " scale(" + carScale + ")";
-          })
-          .each(function(d, i) {
-            var car = this.appendChild(importedNode.cloneNode(true));
-            if (d.price < 10000) {
-              fill = "#5AC9E9"
-            }
-            else{
-              fill = "#dddddd"
-            }
-            d3.select(car).select("path").attr("fill", fill);
+        d3.xml("{{ config["APP_URL"] }}/static/img/car.svg", "image/svg+xml", function(xml) {
+
+
+          var importedNode = document.importNode(xml.documentElement, true);
+          path = $(importedNode).children()[3].children[0].getAttribute("d")
+
+          var carWidth  = importedNode.firstElementChild.width.animVal.value * carScale;
+          var carHeight = importedNode.firstElementChild.height.animVal.value * carScale;
+
+          //$( "#list-container").append("<svg src=" + importedNode + "></svg>")
+          $( "#list-container").append(importedNode)
+          var textToInsert = [];
+          for (var i = data.length-1; i >= 0; i--) {
+            var c = 0;
+            textToInsert[c++] = "<tr>";
+            textToInsert[c++] = "<td>" + (data.length-i).toString() + "</td>"
+            textToInsert[c++] = "<td>" + data[i].year + "</td>"
+            textToInsert[c++] = "<td>" + commaSeparateNumber(data[i].miles) + "</td>"
+            textToInsert[c++] = "<td>" + "$"+ commaSeparateNumber(data[i].price) + "</td>"
+            textToInsert[c++] = "</tr>"
+            $( "#table_body" ).append(textToInsert.join(''));
+            //$( "#svg" + count.toString() ).append(importedNode)
+          }
+
+
+
+
+
+          //Create X scale
+          var xScale = d3.scale.linear()
+                      .domain([d3.min(data, function(d) { return d.year; }) - 1,
+                               d3.max(data, function(d) { return d.year; }) + 1])
+                      .range([padding, w - padding]);
+          //Create Y scale
+          var yScale = d3.scale.linear()
+                      .domain([d3.min(data, function(d) { return d.miles; }) - 10000,
+                               d3.max(data, function(d) { return d.miles; }) + 10000])
+                      .range([h - padding, padding]);
+
+          //Define X axis
+          var xAxis = d3.svg.axis()
+                            .scale(xScale)
+                            .orient("bottom")
+                            .ticks(5)
+                            .tickFormat(d3.format(".0f"));
+          //Define Y axis
+          var yAxis = d3.svg.axis()
+                            .scale(yScale)
+                            .orient("left")
+                            .ticks(5)
+                            .tickFormat(function(d) { return d/1000+"K"; });
+          //Create SVG element
+          var svg = d3.select("#graph-container")
+                            .append("svg")
+                            .attr("width", w)
+                            .attr("height", h)
+                            .attr("class", "center");
+
+
+          //Create circles
+          svg.selectAll("g")
+            .data(data)
+            .enter()
+            .append("svg:a")
+            .attr("xlink:href", function(d) {
+                  return url_root + d.url;
+            })
+            .attr("target", "_blank")
+            .append("g")
+            .attr("class", "car")
+            .attr("transform", function(d, i){
+              return "translate(" + (xScale(d.year) - carWidth/2) + ","
+              + (yScale(d.miles) - carHeight/2) + ")"
+              + " scale(" + carScale + ")";
+            })
+            .each(function(d, i) {
+              var car = this.appendChild(importedNode.cloneNode(true));
+              //if (d.price < 16000 - 900*(2014-d.year)) {
+              if (d.delta>0) {
+                fill = goodColor
+              }
+              else{
+                fill = badColor
+              }
+              d3.select(car).select("path").attr("fill", fill);
+            });
+
+
+
+          $('.car').tipsy({
+            gravity: 'w',
+            html: true,
+            title: function() {
+              return "$" + this.__data__.price/1000 + "K";}
           });
+          //Create X axis
+          svg.append("g")
+             .attr("class", "axis")
+             .attr("transform", "translate(0," + (h - padding) + ")")
+             .call(xAxis);
+          //Create Y axis
+          svg.append("g")
+             .attr("class", "axis")
+             .attr("transform", "translate(" + padding + ",0)")
+             .call(yAxis);
+          //Create X label
+          svg.append("text")
+            .attr("class", "axis_label")
+            .attr("text-anchor", "middle")
+            .attr("x", (w)/2)
+            .attr("y", h - padding + 40)
+            .text("Year");
+          //Create Y label
+          svg.append("text")
+            .attr("class", "axis_label")
+            .attr("text-anchor", "middle")
+            .attr("x", -h/2)
+            .attr("y", 10)
+            .attr("transform", "rotate(-90)")
+            .text("Miles");
 
 
 
-        $('.car').tipsy({
-          gravity: 'w',
-          html: true,
-          title: function() {
-            return "$" + this.__data__.price/1000 + "K";}
         });
-        //Create X axis
-        svg.append("g")
-           .attr("class", "axis")
-           .attr("transform", "translate(0," + (h - padding) + ")")
-           .call(xAxis);
-        //Create Y axis
-        svg.append("g")
-           .attr("class", "axis")
-           .attr("transform", "translate(" + padding + ",0)")
-           .call(yAxis);
-        //Create X label
-        svg.append("text")
-          .attr("class", "axis_label")
-          .attr("text-anchor", "middle")
-          .attr("x", (w)/2)
-          .attr("y", h - padding + 40)
-          .text("Year");
-        //Create Y label
-        svg.append("text")
-          .attr("class", "axis_label")
-          .attr("text-anchor", "middle")
-          .attr("x", -h/2)
-          .attr("y", 10)
-          .attr("transform", "rotate(-90)")
-          .text("Miles");
-      });
+
+
+          function initialize() {
+
+            var mapOptions = {
+              center: new google.maps.LatLng(37.775, -122.418),
+              zoom: 8,
+              mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+            var map = new google.maps.Map(document.getElementById("map_canvas"),
+                mapOptions);
+
+            var goodCar = {
+              path: path,
+              fillColor: goodColor,
+              fillOpacity: 1,
+              scale: carScale,
+              strokeColor: "#777777",
+              strokeWeight: 1
+            };
+
+            var badCar = {
+              path: path,
+              fillColor: badColor_map,
+              fillOpacity: 1,
+              scale: carScale,
+              strokeColor: "#777777",
+              strokeWeight: 1
+            };
+
+
+            var map_count = 0
+            var marker = []
+            for (var i = 0; i < data.length; i++) {
+              if (!!data[i].lat) {
+                console.log(data[i].lat)
+
+                var myLatLng = new google.maps.LatLng(data[i].lat, data[i].lon);
+
+                if (data[i].price < 10000) {
+                  icon = goodCar
+                }
+                else{
+                  icon = badCar
+                }
+
+                //document.getElementById('map-canvas')
+
+                console.log(map_count)
+                marker[++map_count] = new google.maps.Marker({
+                    position: myLatLng,
+                    map: map,
+                    url: url_root + data[i].url,
+                    icon: icon,
+                });
+                console.log(url_root + data[i].url)
+
+                $('marker').tipsy({
+                  gravity: 'w',
+                  html: true,
+                  title: function() {
+                  return "hello";}
+                });
+                google.maps.event.addListener(marker[map_count], 'click', function() {
+                  window.open(marker[map_count].url, "_blank")
+                })
+              }
+
+            } //for
+          console.log(marker)
+
+          } //function initialize
+
+        $('.container-toggler').click(function(){
+          $('.container-toggle').hide();
+          $($(this).attr('data-container-id')).show();
+
+          if ($(this).attr('data-container-id') == "#map_canvas") {
+            initialize() //must be initialized in a non-hidden state
+            console.log("initialized")
+          }
+
+        });
+
+      }); //getJson
+
     </script>
   </body>
 </html>

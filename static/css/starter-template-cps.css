@@ -36,3 +36,15 @@ body {
     margin: auto;
     display: block;
 }
+
+/*probably not necessary*/
+
+
+
+.container-toggle {
+    display: none;
+    height: 400px;
+    width: 700px;
+    padding: 0;
+    margin: 0;
+}

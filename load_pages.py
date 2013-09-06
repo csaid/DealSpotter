@@ -3,6 +3,7 @@ import urllib2
 import re
 import pickle
 import time
+import MySQLdb
 from pandas import DataFrame, Series
 import pandas as pd
 from os import sys
@@ -112,8 +113,8 @@ def process_search_page(page_index, df):
 def main():
 
     if (sys.argv[1] == 'scrape'):
-        df = DataFrame(columns=['year', 'model', 'price', 'miles', 'lat', 'lon', 'url'])
-        for page_index in range(0,300,100):
+        df = DataFrame(columns=['year', 'model', 'price', 'miles', 'lat', 'lon', 'url', 'delta'])
+        for page_index in range(0,2000,100):
             print(page_index)
             df = process_search_page(page_index, df)
 
@@ -125,8 +126,15 @@ def main():
     else:
         raise ValueError("Please provide scrape or load")
 
+
+    df['delta'] = (16000 - 900*(2014-df['year'])) - df['price']
+
     print(df)
 
+    #df.to_sql(if_exists='replace') has a bug. https://github.com/pydata/pandas/issues/2971
+    conn = MySQLdb.connect(user="root", passwd = "", db="carsdb")
+    pd.io.sql.uquery("DELETE FROM cars", conn) #this could error potentially.... e.g. if you add new columns, just delete your database and start over..
+    pd.io.sql.write_frame(df, 'cars', conn, flavor="mysql", if_exists='append')
 
 if __name__ == "__main__":
     main()
