@@ -22,9 +22,11 @@
     <!-- Custom styles for this template -->
     <link href="{{ config["APP_URL"] }}/static/css/jumbotron-narrow.css" rel="stylesheet">
     <link href="{{ config["APP_URL"] }}/static/css/starter-template-cps.css" rel="stylesheet">
+    <link href="{{ config["APP_URL"] }}/static/css/ui-lightness/jquery-ui-1.10.3.custom.min.css" rel="stylesheet">
 
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/jquery-1.8.1.min.js"> </script>
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/jquery.tipsy.js"></script>
+    <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/jquery-ui-1.10.3.custom.min.js"></script>
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/dropdown.js"></script>
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/button.js"></script>
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/collapse.js"></script>
@@ -75,7 +77,25 @@
                   </ul>
                 </li>
 -->
+                <li class="pull-right">
+
+                  <p>
+                    <span for="amount">Price Range: </span>
+                    <span type="text" id="amount" style="border: 0; color: #000000; font-weight: bold;" ></span>
+                  </p>
+
+                  <div style="width: 200px" id="slider-range"></div>
+
+                </li>
+
+
+
               </ul>
+
+
+
+
+
 
 
               <div class="btn-group" data-toggle="buttons">
@@ -89,6 +109,8 @@
                   <input type="radio" name="options" id="option3"> Graph
                 </label>
               </div>
+
+
 
 
           </nav> <!-- /navbar-example -->
@@ -150,6 +172,20 @@
       }
 
 
+
+      $( "#slider-range" ).slider({
+        range: true,
+        min: 0,
+        max: 25000,
+        values: [ 1000, 20000 ],
+        slide: function( event, ui ) {
+          $( "#amount" ).html( "$" + ui.values[ 0 ] + " - " + "$" + ui.values[ 1 ]);
+        }
+      });
+      $( "#amount" ).html( "$" + $( "#slider-range" ).slider( "values", 0 ) + " - " +
+        "$" + $( "#slider-range" ).slider( "values", 1 ) );
+      $( "#slider-range" ).children("div").css("background",badColor)
+
       //takes a function name as an argument. The function takes data as an argument
       var data
       $.getJSON('{{ config["APP_URL"] }}/data', function(d) {
@@ -165,20 +201,7 @@
           var carWidth  = importedNode.firstElementChild.width.animVal.value * carScale;
           var carHeight = importedNode.firstElementChild.height.animVal.value * carScale;
 
-          //$( "#list-container").append("<svg src=" + importedNode + "></svg>")
-          $( "#list-container").append(importedNode)
-          var textToInsert = [];
-          for (var i = data.length-1; i >= 0; i--) {
-            var c = 0;
-            textToInsert[c++] = "<tr>";
-            textToInsert[c++] = "<td>" + (data.length-i).toString() + "</td>"
-            textToInsert[c++] = "<td>" + data[i].year + "</td>"
-            textToInsert[c++] = "<td>" + commaSeparateNumber(data[i].miles) + "</td>"
-            textToInsert[c++] = "<td>" + "$"+ commaSeparateNumber(data[i].price) + "</td>"
-            textToInsert[c++] = "</tr>"
-            $( "#table_body" ).append(textToInsert.join(''));
-            //$( "#svg" + count.toString() ).append(importedNode)
-          }
+
 
 
 
@@ -277,9 +300,21 @@
             .attr("transform", "rotate(-90)")
             .text("Miles");
 
+          //$( "#list-container").append("<svg src=" + importedNode + "></svg>")
+          var textToInsert = [];
+          for (var i = data.length-1; i >= 0; i--) {
+            var c = 0;
+            textToInsert[c++] = "<tr>";
+            textToInsert[c++] = "<td>" + (data.length-i).toString() + "</td>"
+            textToInsert[c++] = "<td>" + data[i].year + "</td>"
+            textToInsert[c++] = "<td>" + commaSeparateNumber(data[i].miles) + "</td>"
+            textToInsert[c++] = "<td>" + "$"+ commaSeparateNumber(data[i].price) + "</td>"
+            textToInsert[c++] = "</tr>"
+            $( "#table_body" ).append(textToInsert.join(''));
+            //$( "#svg" + count.toString() ).append(importedNode)
+          }
 
-
-        });
+        }); //d3.xml
 
 
           function initialize() {
