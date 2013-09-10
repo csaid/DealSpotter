@@ -6,6 +6,17 @@ body {
   text-align: center;
 }
 
+
+.row-hover {
+  background-color: #999999;
+  cursor: pointer;
+}
+
+.row-unhover {
+  background-color: white;
+  cursor: default;
+}
+
 .center {
      float: none;
      margin-left: auto;
@@ -37,7 +48,19 @@ body {
     display: block;
 }
 
-/*probably not necessary*/
+
+.ui-slider-range {
+    background: #bbbbbb
+}
+
+.ui-slider-handle {
+    border-color: #bbbbbb
+}
+
+.ui-widget-content {
+    border-color: #aaaaaa
+}
+
 
 
 

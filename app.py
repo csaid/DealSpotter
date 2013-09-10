@@ -16,7 +16,9 @@ def index():
 def data_func():
     conn = MySQLdb.connect(user="root", passwd = "", db="carsdb", cursorclass=MySQLdb.cursors.DictCursor)
     cur = conn.cursor()
-    cur.execute("SELECT * FROM cars WHERE price > 1000 AND miles > 1000 ORDER BY delta")
+    #cmd = 'SELECT * FROM cars WHERE price > 1000 AND miles > 1000 ORDER BY delta'
+    cmd = "SELECT * FROM train WHERE price > 1000 AND miles > 1000 and model in ('accord', 'civic', 'camry', 'corolla')"
+    cur.execute(cmd)
     data = cur.fetchall()
     return jsonify(items=list(data))
 

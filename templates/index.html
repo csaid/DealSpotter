@@ -2,13 +2,7 @@
 <html lang="en" xmlns:xlink="http://www.w3.org/1999/xlink">
   <head>
     <meta charset="utf-8">
-    <!--The Bootstrap way... apparently necessary for scaling to devices..
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    -->
-
-    <!--The Google Maps viewport-->
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-
     <meta name="description" content="">
     <meta name="author" content="">
 
@@ -21,8 +15,10 @@
 
     <!-- Custom styles for this template -->
     <link href="{{ config["APP_URL"] }}/static/css/jumbotron-narrow.css" rel="stylesheet">
-    <link href="{{ config["APP_URL"] }}/static/css/starter-template-cps.css" rel="stylesheet">
     <link href="{{ config["APP_URL"] }}/static/css/ui-lightness/jquery-ui-1.10.3.custom.min.css" rel="stylesheet">
+    <link href="{{ config["APP_URL"] }}/static/css/starter-template-cps.css" rel="stylesheet">
+
+    <!--<link href="{{ config["APP_URL"] }}/static/css/bootstrap-rowlink.min.css" rel="stylesheet">-->
 
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/jquery-1.8.1.min.js"> </script>
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/jquery.tipsy.js"></script>
@@ -30,7 +26,8 @@
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/dropdown.js"></script>
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/button.js"></script>
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/collapse.js"></script>
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyB_7WOaZYs-4ME_GWLNUfdRQJhPSsyin_U&sensor=false"></script>
+    <!--<script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/bootstrap-rowlink.min.js"></script>-->
+
 
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/d3.v3.min.js"></script>
 
@@ -42,8 +39,6 @@
   </head>
 
   <body>
-
-
 
     <div class="container">
       <div class="header">
@@ -60,23 +55,14 @@
           <nav>
               <ul class="nav nav-pills">
                 <li class="dropdown">
-                  <a id="drop1" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Select a model<b class="caret"></b></a>
+                  <a class="dropdown-toggle" id="choose-model" role="button" data-toggle="dropdown" href="#">Select a model<b class="caret"></b></a>
                   <ul id="select-car" class="dropdown-menu" role="menu" aria-labelledby="drop1">
-                    <li role="presentation"><a role="menuitem" tabindex="-1" value="accord" id="accord" href="/accord">Honda Accord</a></li>
-                    <li role="presentation"><a role="menuitem" tabindex="-1" value="corolla" id="corolla" href="/corolla">Toyota Corolla</a></li>
-                    <li role="presentation"><a role="menuitem" tabindex="-1" value="civic" id="civic" href="/civic">Honda Civic</a></li>
+                    <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="accord" id="accord" href="javascript:void(0);">Honda Accord</a></li>
+                    <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="corolla" id="corolla" href="javascript:void(0)">Toyota Corolla</a></li>
+                    <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="civic" id="civic" href="javascript:void(0);">Honda Civic</a></li>
                   </ul>
                 </li>
-<!--
-                <li class="dropdown">
-                  <a id="drop1" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Select a view<b class="caret"></b></a>
-                  <ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
-                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">List</a></li>
-                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Map</a></li>
-                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Graph</a></li>
-                  </ul>
-                </li>
--->
+
                 <li class="pull-right">
 
                   <p>
@@ -94,16 +80,9 @@
 
 
 
-
-
-
-
               <div class="btn-group" data-toggle="buttons">
                 <label class="btn btn-primary container-toggler" data-container-id="#list-container">
                   <input type="radio" name="options" id="option1"> List
-                </label>
-                <label class="btn btn-primary container-toggler" data-container-id="#map_canvas">
-                  <input type="radio" name="options" id="option2"> Map
                 </label>
                 <label class="btn btn-primary container-toggler" data-container-id="#graph-container">
                   <input type="radio" name="options" id="option3"> Graph
@@ -122,7 +101,7 @@
         <div>
           <!-- May want to set style="display:none;" on these... -->
           <div id="list-container"  class="container-toggle">
-            <table id="table" class="table">
+            <table id="table" data-provides="rowlink" class="table">
               <thead>
                 <tr>
                   <th>Rank</th>
@@ -134,7 +113,6 @@
               <tbody id="table_body">
               </tbody>
             </table></div>
-          <div id="map_canvas"   class="container-toggle"></div>
           <div id="graph-container" class="container-toggle"></div>
         </div>
 
@@ -161,8 +139,9 @@
       var path
       var goodColor = '#5AC9E9'
       var badColor = '#dddddd'
-      var badColor_map = '#bbbbbb'
       var url_root = 'http://sfbay.craigslist.org'
+      var lo = 1000
+      var hi = 20000
 
       function commaSeparateNumber(val){
         while (/(\d+)(\d{3})/.test(val.toString())){
@@ -173,49 +152,31 @@
 
 
 
-      $( "#slider-range" ).slider({
-        range: true,
-        min: 0,
-        max: 25000,
-        values: [ 1000, 20000 ],
-        slide: function( event, ui ) {
-          $( "#amount" ).html( "$" + ui.values[ 0 ] + " - " + "$" + ui.values[ 1 ]);
-        }
-      });
-      $( "#amount" ).html( "$" + $( "#slider-range" ).slider( "values", 0 ) + " - " +
-        "$" + $( "#slider-range" ).slider( "values", 1 ) );
-      $( "#slider-range" ).children("div").css("background",badColor)
+
 
       //takes a function name as an argument. The function takes data as an argument
       var data
+      var unfiltered_data
+
       $.getJSON('{{ config["APP_URL"] }}/data', function(d) {
-        data = d.items
+        unfiltered_data = d.items
 
 
-        d3.xml("{{ config["APP_URL"] }}/static/img/car.svg", "image/svg+xml", function(xml) {
-
+        d3.xml("{{ config["APP_URL"] }}/static/img/car_new.svg", "image/svg+xml", function(xml) {
 
           var importedNode = document.importNode(xml.documentElement, true);
-          path = $(importedNode).children()[3].children[0].getAttribute("d")
 
-          var carWidth  = importedNode.firstElementChild.width.animVal.value * carScale;
-          var carHeight = importedNode.firstElementChild.height.animVal.value * carScale;
-
-
-
-
-
+          var carWidth = 40
+          var carHeight = 40
 
 
           //Create X scale
           var xScale = d3.scale.linear()
-                      .domain([d3.min(data, function(d) { return d.year; }) - 1,
-                               d3.max(data, function(d) { return d.year; }) + 1])
+                      .domain([1995, 2014])
                       .range([padding, w - padding]);
           //Create Y scale
           var yScale = d3.scale.linear()
-                      .domain([d3.min(data, function(d) { return d.miles; }) - 10000,
-                               d3.max(data, function(d) { return d.miles; }) + 10000])
+                      .domain([0, 250000])
                       .range([h - padding, padding]);
 
           //Define X axis
@@ -236,44 +197,6 @@
                             .attr("width", w)
                             .attr("height", h)
                             .attr("class", "center");
-
-
-          //Create circles
-          svg.selectAll("g")
-            .data(data)
-            .enter()
-            .append("svg:a")
-            .attr("xlink:href", function(d) {
-                  return url_root + d.url;
-            })
-            .attr("target", "_blank")
-            .append("g")
-            .attr("class", "car")
-            .attr("transform", function(d, i){
-              return "translate(" + (xScale(d.year) - carWidth/2) + ","
-              + (yScale(d.miles) - carHeight/2) + ")"
-              + " scale(" + carScale + ")";
-            })
-            .each(function(d, i) {
-              var car = this.appendChild(importedNode.cloneNode(true));
-              //if (d.price < 16000 - 900*(2014-d.year)) {
-              if (d.delta>0) {
-                fill = goodColor
-              }
-              else{
-                fill = badColor
-              }
-              d3.select(car).select("path").attr("fill", fill);
-            });
-
-
-
-          $('.car').tipsy({
-            gravity: 'w',
-            html: true,
-            title: function() {
-              return "$" + this.__data__.price/1000 + "K";}
-          });
           //Create X axis
           svg.append("g")
              .attr("class", "axis")
@@ -300,106 +223,143 @@
             .attr("transform", "rotate(-90)")
             .text("Miles");
 
-          //$( "#list-container").append("<svg src=" + importedNode + "></svg>")
-          var textToInsert = [];
-          for (var i = data.length-1; i >= 0; i--) {
-            var c = 0;
-            textToInsert[c++] = "<tr>";
-            textToInsert[c++] = "<td>" + (data.length-i).toString() + "</td>"
-            textToInsert[c++] = "<td>" + data[i].year + "</td>"
-            textToInsert[c++] = "<td>" + commaSeparateNumber(data[i].miles) + "</td>"
-            textToInsert[c++] = "<td>" + "$"+ commaSeparateNumber(data[i].price) + "</td>"
-            textToInsert[c++] = "</tr>"
-            $( "#table_body" ).append(textToInsert.join(''));
-            //$( "#svg" + count.toString() ).append(importedNode)
-          }
+
+
+          function update_display()
+          {
+
+            data = []
+            filt_count = 0
+            for (var i = unfiltered_data.length-1; i >= 0; i--) {
+              if (unfiltered_data[i].model == model && unfiltered_data[i].price >= lo && unfiltered_data[i].price <= hi){
+                data[filt_count++] = unfiltered_data[i]
+              }
+            }
+
+
+            //Create circles
+            var cl = svg.selectAll(".car_link")
+              .data(data, function(d) {
+                return d.url;
+              });
+
+
+            //faster to do appends upon enter rather update. But may need to move them al
+            //to update to preserve z-order
+            cl.enter()
+              .append("svg:a")
+              .attr("class", "car_link")
+              .attr("xlink:href", function(d) {
+                    return url_root + d.url;
+              })
+              .attr("target", "_blank")
+              .append("g")
+              .attr("class", "car_subcontainer")
+              .each(function (d, i) {
+                var car = this.appendChild(importedNode.cloneNode(true));
+                if (d.delta>0) {
+                  fill = goodColor
+                }
+                else{
+                  fill = badColor
+                }
+
+                $($(car).children()[3].children).attr("fill", fill)
+              });
+
+
+            cl.exit().remove();
+
+
+
+            cl
+              .attr("transform", function(d, i){
+                return "translate(" + (xScale(d.year) - carWidth/2) + ","
+                + (yScale(d.miles) - carHeight/2) + ")"
+                + " scale(" + carScale + ")";
+              })
+              .transition().style("opacity")
+
+
+
+
+            $('.car_subcontainer').tipsy({
+              gravity: 'w',
+              html: true,
+              title: function() {
+                return "$" + this.__data__.price/1000 + "K";}
+            });
+
+
+            //$( "#list-container").append("<svg src=" + importedNode + "></svg>")
+            $( "#table_body" ).html("")
+            var textToInsert = [];
+            for (var i = data.length-1; i >= 0; i--) {
+              var c = 0;
+              textToInsert[c++] = "<tr url=" + url_root + data[i].url + ">";
+              textToInsert[c++] = "<td>" + (data.length-i).toString() + "</td>"
+              textToInsert[c++] = "<td>" + data[i].year + "</td>"
+              textToInsert[c++] = "<td>" + commaSeparateNumber(data[i].miles) + "</td>"
+              textToInsert[c++] = "<td>" + "$"+ commaSeparateNumber(data[i].price) + "</td>"
+              textToInsert[c++] = "</tr>"
+              console.log(textToInsert.join(''))
+              $( "#table_body" ).append(textToInsert.join(''));
+            }
+
+            $('.table > tbody > tr').click(function() {
+              console.log($(this))
+              console.log($(this).attr("url"))
+              window.open($(this).attr("url"),'_blank')
+            })
+
+            $('.table > tbody > tr').mouseenter(function() {
+              $(this).removeClass("row-unhover").addClass("row-hover")
+            })
+
+            $('.table > tbody > tr').mouseleave(function() {
+              $(this).removeClass("row-hover").addClass("row-unhover")
+            })
+
+          } //update
+
+          $('.container-toggler').click(function(){
+            $('.container-toggle').hide();
+            $($(this).attr('data-container-id')).show();
+          });
+
+          $('.model').click(function(){
+            model = $(this).attr('value')
+            console.log(model)
+            update_display()
+          });
+
+
+          $( "#slider-range" ).slider({
+            range: true,
+            min: 0,
+            max: 25000,
+            step: 500,
+            values: [ lo, hi ],
+            slide: function( event, ui ) {
+              lo = ui.values[0]
+              hi = ui.values[1]
+              $( "#amount" ).html( "$" + lo + " - " + "$" + hi);
+              update_display()
+            }
+          });
+
+          $( "#amount" ).html( "$" + $( "#slider-range" ).slider( "values", 0 ) + " - " +
+            "$" + $( "#slider-range" ).slider( "values", 1 ) );
+
+          $( ".ui-slider-handle.ui-state-focus" ).css("background-color", "#aaa")
+          $( ".ui-slider-handle.ui-state-focus" ).css("color", "#aaa")
+          $( ".ui-slider-handle.ui-state-focus" ).css("background", "#aaa")
 
         }); //d3.xml
 
-
-          function initialize() {
-
-            var mapOptions = {
-              center: new google.maps.LatLng(37.775, -122.418),
-              zoom: 8,
-              mapTypeId: google.maps.MapTypeId.ROADMAP
-            };
-            var map = new google.maps.Map(document.getElementById("map_canvas"),
-                mapOptions);
-
-            var goodCar = {
-              path: path,
-              fillColor: goodColor,
-              fillOpacity: 1,
-              scale: carScale,
-              strokeColor: "#777777",
-              strokeWeight: 1
-            };
-
-            var badCar = {
-              path: path,
-              fillColor: badColor_map,
-              fillOpacity: 1,
-              scale: carScale,
-              strokeColor: "#777777",
-              strokeWeight: 1
-            };
-
-
-            var map_count = 0
-            var marker = []
-            for (var i = 0; i < data.length; i++) {
-              if (!!data[i].lat) {
-                console.log(data[i].lat)
-
-                var myLatLng = new google.maps.LatLng(data[i].lat, data[i].lon);
-
-                if (data[i].price < 10000) {
-                  icon = goodCar
-                }
-                else{
-                  icon = badCar
-                }
-
-                //document.getElementById('map-canvas')
-
-                console.log(map_count)
-                marker[++map_count] = new google.maps.Marker({
-                    position: myLatLng,
-                    map: map,
-                    url: url_root + data[i].url,
-                    icon: icon,
-                });
-                console.log(url_root + data[i].url)
-
-                $('marker').tipsy({
-                  gravity: 'w',
-                  html: true,
-                  title: function() {
-                  return "hello";}
-                });
-                google.maps.event.addListener(marker[map_count], 'click', function() {
-                  window.open(marker[map_count].url, "_blank")
-                })
-              }
-
-            } //for
-          console.log(marker)
-
-          } //function initialize
-
-        $('.container-toggler').click(function(){
-          $('.container-toggle').hide();
-          $($(this).attr('data-container-id')).show();
-
-          if ($(this).attr('data-container-id') == "#map_canvas") {
-            initialize() //must be initialized in a non-hidden state
-            console.log("initialized")
-          }
-
-        });
-
       }); //getJson
+
+
 
     </script>
   </body>
