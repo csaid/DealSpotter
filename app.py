@@ -11,13 +11,19 @@ def index():
     return render_template('index.html')
     #return render_template('index.html', data=1981)
 
+@app.route('/test')
+def test():
+    return render_template('test.html')
+    #return render_template('index.html', data=1981)
 
 @app.route('/data', methods=['GET'])
 def data_func():
     conn = MySQLdb.connect(user="root", passwd = "", db="carsdb", cursorclass=MySQLdb.cursors.DictCursor)
     cur = conn.cursor()
-    #cmd = 'SELECT * FROM cars WHERE price > 1000 AND miles > 1000 ORDER BY delta'
-    cmd = "SELECT * FROM train WHERE price > 1000 AND miles > 1000 and model in ('accord', 'civic', 'camry', 'corolla')"
+
+    #http://stackoverflow.com/questions/7124418/mysql-subquery-limit
+    #change url to date!!!
+    cmd = "SELECT * FROM wdelta WHERE url in (SELECT * FROM (SELECT url FROM wdelta WHERE model in ('accord', 'civic', 'camry') ORDER BY rand() LIMIT 80) as t) ORDER BY delta DESC;"
     cur.execute(cmd)
     data = cur.fetchall()
     return jsonify(items=list(data))

@@ -8,24 +8,31 @@ import json
 from pandas import DataFrame, Series
 import pandas as pd
 from os import sys
+import utilities
+reload(utilities)
+import utilities as ut
+import datetime as dt
 
 class Scraper:
 
-    def __init__(self):
+    def __init__(self, area):
         self.df = DataFrame(columns=['year',
                                      'model',
                                      'price',
                                      'miles',
                                      'lat',
                                      'lon',
+                                     'date',
+                                     'area',
                                      'title',
                                      'body',
                                      'phone',
                                      'image_count',
                                      'url'])
         self.conn = MySQLdb.connect(user="root", passwd = "", db="carsdb")
-        self.table_name = "train"
-        self.url_root = "http://sfbay.craigslist.org"
+        self.table_name = "scraped"
+        self.url_root = "http://" + area + ".craigslist.org"
+        self.area = area
 
     def _find_miles(self, s):
 
@@ -47,9 +54,13 @@ class Scraper:
                 if result:
                     if kstyle=="k":
                         str_val = result.group(1).replace('k','').replace('K','')
-                        return(1000*int(str_val))
+                        val = 1000*int(str_val)
+                        if val < 999999:
+                            return(val)
                     else:
-                        return(int(result.group(1).replace(',','')))
+                        val = int(result.group(1).replace(',',''))
+                        if val < 999999:
+                            return(val)
 
 
     def _find_year(self, s):
@@ -73,6 +84,14 @@ class Scraper:
         if result:
             return result.group(0)
 
+    def _find_date(self, soup):
+        text = soup.find('date').text
+        date = text.split()[0].strip(',').replace('-',':')
+        time = text.split()[1]
+        time = dt.datetime.strptime(time, '%I:%M%p').time().isoformat()
+        return date + ":" + time
+
+
 
     def _find_lat_lon(self, soup):
         leaflet = soup.find(id="leaflet")
@@ -86,16 +105,18 @@ class Scraper:
 
     def _process_search_page(self, page_index):
 
-        try:
-
-            f = open("models.json")
-            models = {model['name'] for model in json.load(f)}
-            search_page = urllib2.urlopen(self.url_root + "/cta/index" + str(page_index) + ".html")
-            search_soup = BeautifulSoup(search_page)
-            rows = search_soup.find_all("p", class_="row")
+        models = {model['name'] for model in json.load(open("models.json"))}
+        search_page = urllib2.urlopen(self.url_root + "/cta/index" + str(page_index) + ".html")
+        search_soup = BeautifulSoup(search_page)
+        rows = search_soup.find_all("p", class_="row")
 
 
-            for row in rows:
+        for row in rows:
+
+
+
+            try:
+
                 price_tag = row.find("span", class_="price")
                 tag = row.find("span", class_="date").next_sibling.next_sibling#
                 title = tag.text
@@ -109,7 +130,7 @@ class Scraper:
 
                     car_link = tag["href"]
 
-                    time.sleep(0.1)
+                    time.sleep(0.01)
 
                     car_page = urllib2.urlopen(self.url_root + car_link)
 
@@ -119,6 +140,10 @@ class Scraper:
                     # Find latitude and longitude
                     lat, lon = self._find_lat_lon(soup)
 
+
+                    # Find date
+                    date = self._find_date(soup)
+
                     # Find miles
                     miles = self._find_miles(title)
                     if not miles:
@@ -126,8 +151,6 @@ class Scraper:
 
                     # Find year
                     year = self._find_year(title)
-                    if not year:
-                        year = self._find_year(body)
 
                     # Find phone
                     phone = self._find_phone(body)
@@ -146,6 +169,8 @@ class Scraper:
                                              'miles': miles,
                                              'lat': lat,
                                              'lon': lon,
+                                             'date': date,
+                                             'area': self.area,
                                              'title': title,
                                              'body': body,
                                              'phone': phone,
@@ -156,8 +181,10 @@ class Scraper:
                     print(miles)
                     print(year)
                     print('\n')
-        except:
-            print('ERROR ENCOUNTERED')
+
+            except:
+                print("\n\nError encountered!!\n\n")
+
 
 
     def load(self):
@@ -165,32 +192,44 @@ class Scraper:
         self.df = pd.io.sql.read_frame("SELECT * FROM " + self.table_name, self.conn)
 
     def scrape(self):
-        for page_index in range(0, 30000, 100):
+        for page_index in range(0, 60000, 100):
             print("page_index = " + str(page_index))
             self._process_search_page(page_index)
 
     def followup(self):
-        new_contents = []
-        for url in self.df['url']:
+        is_flagged = [False for i in range(len(self.df))]
+        for i,url in enumerate(self.df['url']):
             soup = BeautifulSoup(urllib2.urlopen(self.url_root + url))
-            new_contents.append(5)
-        self.df['new_contents'] = new_contents
+            removed = soup.find("div", class_="removed")
+            if removed:
+                if re.search("flagged", removed.find("h2").text):
+                    is_flagged[i] = True
+                    print(i)
+                    print self.df.ix[i, 'title']
+                    print self.df.ix[i, 'body']
+                    print self.df.ix[i, 'url']
 
 
 
-    def save(self):
+
+        self.df['is_flagged'] = is_flagged
+
+
+
+    def save(self, create_or_append):
         pickle.dump(self.df, open('my_df.pickle', "w"))
 
-        # Remove table if already exists
-        if pd.io.sql.table_exists(self.table_name, self.conn, flavor="mysql"):
-            pd.io.sql.uquery("DROP table " + self.table_name, self.conn)
 
-        # Pandas forces VARCHAR (63). Not long enough for body.
-        cmd = pd.io.sql.get_schema(self.df, self.table_name, 'mysql')
-        cmd = re.sub(r"`body` VARCHAR \(63\)", r"`body` TEXT", cmd)
-        cmd = re.sub(r"`title` VARCHAR \(63\)", r"`title` TEXT", cmd)
-        pd.io.sql.execute(cmd, self.conn)
+        if create_or_append == 'create':
+            ut.drop_if_exists(self.conn, self.table_name)
+            ut.prepare_table_w_textcols(self.df, self.table_name, self.conn, ['body', 'title'])
+        elif create_or_append == 'append':
+            pass
+        else:
+            raise ValueError("Please provide 'create' or 'append'")
+
         pd.io.sql.write_frame(self.df, self.table_name, self.conn, flavor="mysql", if_exists="append")
+
 
 
         print(self.df)

@@ -2,10 +2,37 @@ body {
   padding-top: 10px;
 }
 .starter-template {
-  padding: 15px 15px;
+  padding: 0 0;
   text-align: center;
 }
 
+.centered-pills { text-align:center; }
+.centered-pills ul.nav-pills { display:inline-block; }
+.centered-pills li { display:inline; }
+.centered-pills a { float:left; }
+
+.modal-small {
+    width:350px;
+}
+
+td {
+  text-align:right;
+  padding-right:55px !important;
+  padding-left:55px !important;
+
+}
+
+th {
+  text-align:right;
+  padding-right:55px !important;
+  padding-left:55px !important;
+
+}
+
+
+.header h3 {
+  padding-bottom: 0;
+}
 
 .row-hover {
   background-color: #999999;

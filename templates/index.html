@@ -9,36 +9,26 @@
     <title>DealSpotter - Find rare deals on Craigslist... the easy way</title>
 
     <link href="{{ config["APP_URL"] }}/static/css/tipsy.css" rel="stylesheet" type="text/css" />
-
-    <!-- Bootstrap core CSS -->
-    <link href="{{ config["APP_URL"] }}/static/css/bootstrap.css" rel="stylesheet">
-
-    <!-- Custom styles for this template -->
-    <link href="{{ config["APP_URL"] }}/static/css/jumbotron-narrow.css" rel="stylesheet">
     <link href="{{ config["APP_URL"] }}/static/css/ui-lightness/jquery-ui-1.10.3.custom.min.css" rel="stylesheet">
+    <link href="{{ config["APP_URL"] }}/static/css/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="{{ config["APP_URL"] }}/static/css/jumbotron-narrow.css" rel="stylesheet">
     <link href="{{ config["APP_URL"] }}/static/css/starter-template-cps.css" rel="stylesheet">
-
-    <!--<link href="{{ config["APP_URL"] }}/static/css/bootstrap-rowlink.min.css" rel="stylesheet">-->
 
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/jquery-1.8.1.min.js"> </script>
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/jquery.tipsy.js"></script>
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/jquery-ui-1.10.3.custom.min.js"></script>
-    <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/dropdown.js"></script>
-    <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/button.js"></script>
-    <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/collapse.js"></script>
-    <!--<script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/bootstrap-rowlink.min.js"></script>-->
-
-
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/d3.v3.min.js"></script>
 
-    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="../../assets/js/html5shiv.js"></script>
-      <script src="../../assets/js/respond.min.js"></script>
-    <![endif]-->
+    <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/bootstrap.js"></script>
+
+
+
   </head>
 
+
   <body>
+
+
 
     <div class="container">
       <div class="header">
@@ -55,13 +45,14 @@
           <nav>
               <ul class="nav nav-pills">
                 <li class="dropdown">
-                  <a class="dropdown-toggle" id="choose-model" role="button" data-toggle="dropdown" href="#">Select a model<b class="caret"></b></a>
+                  <a class="dropdown-toggle" id="choose-model" data-toggle="dropdown" href="#"><span id="dropdown_title">Select a model</span><span class="caret"></span></a>
                   <ul id="select-car" class="dropdown-menu" role="menu" aria-labelledby="drop1">
-                    <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="accord" id="accord" href="javascript:void(0);">Honda Accord</a></li>
-                    <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="corolla" id="corolla" href="javascript:void(0)">Toyota Corolla</a></li>
-                    <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="civic" id="civic" href="javascript:void(0);">Honda Civic</a></li>
+                    <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="accord" href="javascript:void(0);">Honda Accord</a></li>
+                    <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="camry" href="javascript:void(0)">Toyota Camry</a></li>
+                    <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="civic" href="javascript:void(0);">Honda Civic</a></li>
                   </ul>
                 </li>
+
 
                 <li class="pull-right">
 
@@ -82,32 +73,26 @@
 
               <div class="btn-group" data-toggle="buttons">
                 <label class="btn btn-primary container-toggler" data-container-id="#list-container">
-                  <input type="radio" name="options" id="option1"> List
+                  <input type="radio" name="options" id="list"> List
                 </label>
                 <label class="btn btn-primary container-toggler" data-container-id="#graph-container">
-                  <input type="radio" name="options" id="option3"> Graph
+                  <input type="radio" name="options" id="graph"> Graph
                 </label>
               </div>
-
-
-
-
           </nav> <!-- /navbar-example -->
-
         </div> <!-- /starter-template -->
 
 
 
         <div>
-          <!-- May want to set style="display:none;" on these... -->
           <div id="list-container"  class="container-toggle">
             <table id="table" data-provides="rowlink" class="table">
               <thead>
                 <tr>
-                  <th>Rank</th>
+                  <th>Savings</th>
+                  <th>Price</th>
                   <th>Year</th>
                   <th>Miles</th>
-                  <th>Price</th>
                 </tr>
               </thead>
               <tbody id="table_body">
@@ -132,16 +117,18 @@
 
       //SVG Width and height
       var w = 600;
-      var h = 380;
+      var h = 320;
       var padding = 65; //dist between svg edge and axis, I think
+      var top_padding = 15
+
       var carScale = .4
       //var data = '{{ data }}'
       var path
       var goodColor = '#5AC9E9'
       var badColor = '#dddddd'
       var url_root = 'http://sfbay.craigslist.org'
-      var lo = 1000
-      var hi = 20000
+      var lo = 5000
+      var hi = 17000
 
       function commaSeparateNumber(val){
         while (/(\d+)(\d{3})/.test(val.toString())){
@@ -150,6 +137,14 @@
         return val;
       }
 
+      function kstyle_number(val){
+        return Math.round(val/1000) + "K"
+      }
+
+
+      function sign_char(val) {
+        return val < 0 ? "-" : "";
+      }
 
 
 
@@ -160,9 +155,11 @@
 
       $.getJSON('{{ config["APP_URL"] }}/data', function(d) {
         unfiltered_data = d.items
-
+        console.log(unfiltered_data)
 
         d3.xml("{{ config["APP_URL"] }}/static/img/car_new.svg", "image/svg+xml", function(xml) {
+
+
 
           var importedNode = document.importNode(xml.documentElement, true);
 
@@ -176,8 +173,8 @@
                       .range([padding, w - padding]);
           //Create Y scale
           var yScale = d3.scale.linear()
-                      .domain([0, 250000])
-                      .range([h - padding, padding]);
+                      .domain([0, 220000])
+                      .range([h - padding, top_padding]);
 
           //Define X axis
           var xAxis = d3.svg.axis()
@@ -200,12 +197,12 @@
           //Create X axis
           svg.append("g")
              .attr("class", "axis")
-             .attr("transform", "translate(0," + (h - padding) + ")")
+             .attr("transform", "translate(0," + (h - padding) + ")") //increasing first arg moves x axis right, but must be zero. Increasing second arg should move x axis down...
              .call(xAxis);
           //Create Y axis
           svg.append("g")
              .attr("class", "axis")
-             .attr("transform", "translate(" + padding + ",0)")
+             .attr("transform", "translate(" + padding + "," + 0 + ")") //increasing second arg moves y axis down, but should be zero. First arg should be padding
              .call(yAxis);
           //Create X label
           svg.append("text")
@@ -236,6 +233,8 @@
               }
             }
 
+            //Remove all cars so that z-order remains correct
+            svg.selectAll(".car_link").remove()
 
             //Create circles
             var cl = svg.selectAll(".car_link")
@@ -257,7 +256,7 @@
               .attr("class", "car_subcontainer")
               .each(function (d, i) {
                 var car = this.appendChild(importedNode.cloneNode(true));
-                if (d.delta>0) {
+                if (d.delta>1000) {
                   fill = goodColor
                 }
                 else{
@@ -287,8 +286,9 @@
               gravity: 'w',
               html: true,
               title: function() {
-                return "$" + this.__data__.price/1000 + "K";}
+                return "$" + Math.round(this.__data__.price/100)/10 + "K";}
             });
+
 
 
             //$( "#list-container").append("<svg src=" + importedNode + "></svg>")
@@ -297,10 +297,10 @@
             for (var i = data.length-1; i >= 0; i--) {
               var c = 0;
               textToInsert[c++] = "<tr url=" + url_root + data[i].url + ">";
-              textToInsert[c++] = "<td>" + (data.length-i).toString() + "</td>"
-              textToInsert[c++] = "<td>" + data[i].year + "</td>"
-              textToInsert[c++] = "<td>" + commaSeparateNumber(data[i].miles) + "</td>"
+              textToInsert[c++] = "<td>" + sign_char(data[i].delta) + "$" + commaSeparateNumber(Math.abs(Math.round(data[i].delta))) + "</td>"
               textToInsert[c++] = "<td>" + "$"+ commaSeparateNumber(data[i].price) + "</td>"
+              textToInsert[c++] = "<td>" + data[i].year + "</td>"
+              textToInsert[c++] = "<td>" + kstyle_number(data[i].miles) + "</td>"
               textToInsert[c++] = "</tr>"
               console.log(textToInsert.join(''))
               $( "#table_body" ).append(textToInsert.join(''));
@@ -327,9 +327,25 @@
             $($(this).attr('data-container-id')).show();
           });
 
+
+          //$('.dropdown-toggle').dropdown();
+
+
           $('.model').click(function(){
             model = $(this).attr('value')
-            console.log(model)
+            $('#dropdown_title').html($(this).html());
+            update_display()
+          });
+
+
+
+
+
+          $('.splash-model').click(function(){
+            model = $(this).attr('value')
+            $('#ModelModal').modal('hide')
+            $('#dropdown_title').html($(this).html());
+            $('#list').click()
             update_display()
           });
 
@@ -355,12 +371,45 @@
           $( ".ui-slider-handle.ui-state-focus" ).css("color", "#aaa")
           $( ".ui-slider-handle.ui-state-focus" ).css("background", "#aaa")
 
+
+
         }); //d3.xml
 
       }); //getJson
 
+      $(window).load(function(){
+          $('#ModelModal').modal('show');
+      });
 
 
     </script>
+
+
+    <div class="modal fade" id="ModelModal" data-backdrop="static">
+      <div class="modal-dialog modal-small">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Welcome to DealSpotter</h4>
+          </div>
+          <div class="modal-body">
+            <div class="span12 centered-pills">
+              <ul class="nav nav-pills">
+                <li class="dropdown">
+                  <a class="dropdown-toggle" id="choose-model" role="button" data-toggle="dropdown" href="#">Select a model<b class="caret"></b></a>
+                  <ul id="select-car" class="dropdown-menu" role="menu" aria-labelledby="drop1">
+                    <li role="presentation"><a class="splash-model" role="menuitem" tabindex="-1" value="accord" href="javascript:void(0);">Honda Accord</a></li>
+                    <li role="presentation"><a class="splash-model" role="menuitem" tabindex="-1" value="camry" href="javascript:void(0)">Toyota Camry</a></li>
+                    <li role="presentation"><a class="splash-model" role="menuitem" tabindex="-1" value="civic" href="javascript:void(0);">Honda Civic</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+
   </body>
 </html>
