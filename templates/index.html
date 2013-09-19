@@ -3,8 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta http-equiv="Content-Type" content="application/xhtml+xml">
 
     <title>DealSpotter - Find rare deals on Craigslist... the easy way</title>
 
@@ -12,74 +11,65 @@
     <link href="{{ config["APP_URL"] }}/static/css/ui-lightness/jquery-ui-1.10.3.custom.min.css" rel="stylesheet">
     <link href="{{ config["APP_URL"] }}/static/css/bootstrap.css" rel="stylesheet" media="screen">
     <link href="{{ config["APP_URL"] }}/static/css/jumbotron-narrow.css" rel="stylesheet">
-    <link href="{{ config["APP_URL"] }}/static/css/starter-template-cps.css" rel="stylesheet">
+    <link href="{{ config["APP_URL"] }}/static/css/styles.css" rel="stylesheet">
 
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/jquery-1.8.1.min.js"> </script>
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/jquery.tipsy.js"></script>
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/jquery-ui-1.10.3.custom.min.js"></script>
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/d3.v3.min.js"></script>
-
     <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/bootstrap.js"></script>
-
-
-
+    <script type="text/javascript" src="{{ config["APP_URL"] }}/static/js/dealspotter.js"></script>
   </head>
 
 
   <body>
-
-
-
     <div class="container">
       <div class="header">
         <ul class="nav nav-pills pull-right">
           <li class="active"><a href="#">Home</a></li>
-          <li><a href="#">About</a></li>
+          <li><a href="about">About</a></li>
           <li><a href="#">Contact</a></li>
         </ul>
         <h3 class="text-muted">DealSpotter</h3>
-        <div class="starter-template">
-          <h1>DealSpotter</h1>
-          <p class="lead">Find rare deals on Craigslist... the easy way.</p>
+      </div>
+      <div class="starter-template">
+        <h1>DealSpotter</h1>
+        <p class="lead">Find rare deals on Craigslist... the easy way.</p>
 
-          <nav>
-              <ul class="nav nav-pills">
-                <li class="dropdown">
-                  <a class="dropdown-toggle" id="choose-model" data-toggle="dropdown" href="#"><span id="dropdown_title">Select a model</span><span class="caret"></span></a>
-                  <ul id="select-car" class="dropdown-menu" role="menu" aria-labelledby="drop1">
-                    <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="accord" href="javascript:void(0);">Honda Accord</a></li>
-                    <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="camry" href="javascript:void(0)">Toyota Camry</a></li>
-                    <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="civic" href="javascript:void(0);">Honda Civic</a></li>
-                  </ul>
-                </li>
+        <nav>
 
+            <ul class="nav nav-pills">
 
-                <li class="pull-right">
+              <li class="dropdown">
+                <a class="dropdown-toggle" id="choose-model" data-toggle="dropdown" href="#"><span id="dropdown_title">Select a model</span><span class="caret"></span></a>
+                 <ul id="select-car" class="dropdown-menu" role="menu" aria-labelledby="drop1">
+                  <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="accord" href="javascript:void(0);">Honda Accord</a></li>
+                   <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="civic" href="javascript:void(0);">Honda Civic</a></li>
+                   <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="camry" href="javascript:void(0)">Toyota Camry</a></li>
+                   <li role="presentation"><a class="model" role="menuitem" tabindex="-1" value="corolla" href="javascript:void(0)">Toyota Corolla</a></li>
+                 </ul>
+              </li>
 
-                  <p>
-                    <span for="amount">Price Range: </span>
-                    <span type="text" id="amount" style="border: 0; color: #000000; font-weight: bold;" ></span>
-                  </p>
+              <li class="pull-right">
+                <p>
+                  <span for="amount">Price Range: </span>
+                  <span type="text" id="amount" style="border: 0; color: #000000; font-weight: bold;" ></span>
+                </p>
+                <div style="width: 200px" id="slider-range"></div>
+              </li>
 
-                  <div style="width: 200px" id="slider-range"></div>
+            </ul>
 
-                </li>
-
-
-
-              </ul>
-
-
-
-              <div class="btn-group" data-toggle="buttons">
-                <label class="btn btn-primary container-toggler" data-container-id="#list-container">
-                  <input type="radio" name="options" id="list"> List
-                </label>
-                <label class="btn btn-primary container-toggler" data-container-id="#graph-container">
-                  <input type="radio" name="options" id="graph"> Graph
-                </label>
-              </div>
+            <div class="btn-group" data-toggle="buttons">
+              <label class="btn btn-primary container-toggler" data-container-id="#list-container">
+                <input type="radio" name="options" id="list"> List
+              </label>
+              <label class="btn btn-primary container-toggler" data-container-id="#graph-container">
+                <input type="radio" name="options" id="graph"> Graph
+              </label>
+            </div>
           </nav> <!-- /navbar-example -->
+
         </div> <!-- /starter-template -->
 
 
@@ -89,10 +79,11 @@
             <table id="table" data-provides="rowlink" class="table">
               <thead>
                 <tr>
-                  <th>Savings</th>
-                  <th>Price</th>
+                  <th>Rank</th>
                   <th>Year</th>
                   <th>Miles</th>
+                  <th>Price</th>
+                  <th>Savings</th>
                 </tr>
               </thead>
               <tbody id="table_body">
@@ -102,287 +93,28 @@
         </div>
 
 
-      </div>
-
     </div> <!-- /container -->
 
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script type="text/javascript">
 
 
 
+    <div class="modal fade" data-keyboard="true" tabindex="-1" id="AdModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title"></h4>
+          </div>
+          <div class="modal-body">
+          </div>
+          <div class="modal-footer">
+          </div>
+        </div>
+      </div>
+    </div>
 
-      //SVG Width and height
-      var w = 600;
-      var h = 320;
-      var padding = 65; //dist between svg edge and axis, I think
-      var top_padding = 15
 
-      var carScale = .4
-      //var data = '{{ data }}'
-      var path
-      var goodColor = '#5AC9E9'
-      var badColor = '#dddddd'
-      var url_root = 'http://sfbay.craigslist.org'
-      var lo = 5000
-      var hi = 17000
-
-      function commaSeparateNumber(val){
-        while (/(\d+)(\d{3})/.test(val.toString())){
-          val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
-        }
-        return val;
-      }
-
-      function kstyle_number(val){
-        return Math.round(val/1000) + "K"
-      }
-
-
-      function sign_char(val) {
-        return val < 0 ? "–" : "";
-      }
-
-
-
-
-      //takes a function name as an argument. The function takes data as an argument
-      var data
-      var unfiltered_data
-
-      $.getJSON('{{ config["APP_URL"] }}/data', function(d) {
-        unfiltered_data = d.items
-        console.log(unfiltered_data)
-
-        d3.xml("{{ config["APP_URL"] }}/static/img/car_new.svg", "image/svg+xml", function(xml) {
-
-
-
-          var importedNode = document.importNode(xml.documentElement, true);
-
-          var carWidth = 40
-          var carHeight = 40
-
-
-          //Create X scale
-          var xScale = d3.scale.linear()
-                      .domain([1995, 2014])
-                      .range([padding, w - padding]);
-          //Create Y scale
-          var yScale = d3.scale.linear()
-                      .domain([0, 220000])
-                      .range([h - padding, top_padding]);
-
-          //Define X axis
-          var xAxis = d3.svg.axis()
-                            .scale(xScale)
-                            .orient("bottom")
-                            .ticks(5)
-                            .tickFormat(d3.format(".0f"));
-          //Define Y axis
-          var yAxis = d3.svg.axis()
-                            .scale(yScale)
-                            .orient("left")
-                            .ticks(5)
-                            .tickFormat(function(d) { return d/1000+"K"; });
-          //Create SVG element
-          var svg = d3.select("#graph-container")
-                            .append("svg")
-                            .attr("width", w)
-                            .attr("height", h)
-                            .attr("class", "center");
-          //Create X axis
-          svg.append("g")
-             .attr("class", "axis")
-             .attr("transform", "translate(0," + (h - padding) + ")") //increasing first arg moves x axis right, but must be zero. Increasing second arg should move x axis down...
-             .call(xAxis);
-          //Create Y axis
-          svg.append("g")
-             .attr("class", "axis")
-             .attr("transform", "translate(" + padding + "," + 0 + ")") //increasing second arg moves y axis down, but should be zero. First arg should be padding
-             .call(yAxis);
-          //Create X label
-          svg.append("text")
-            .attr("class", "axis_label")
-            .attr("text-anchor", "middle")
-            .attr("x", (w)/2)
-            .attr("y", h - padding + 40)
-            .text("Year");
-          //Create Y label
-          svg.append("text")
-            .attr("class", "axis_label")
-            .attr("text-anchor", "middle")
-            .attr("x", -h/2)
-            .attr("y", 10)
-            .attr("transform", "rotate(-90)")
-            .text("Miles");
-
-
-
-          function update_display()
-          {
-
-            data = []
-            filt_count = 0
-            for (var i = unfiltered_data.length-1; i >= 0; i--) {
-              if (unfiltered_data[i].model == model && unfiltered_data[i].price >= lo && unfiltered_data[i].price <= hi){
-                data[filt_count++] = unfiltered_data[i]
-              }
-            }
-
-            //Remove all cars so that z-order remains correct
-            svg.selectAll(".car_link").remove()
-
-            //Create circles
-            var cl = svg.selectAll(".car_link")
-              .data(data, function(d) {
-                return d.url;
-              });
-
-
-            //faster to do appends upon enter rather update. But may need to move them al
-            //to update to preserve z-order
-            cl.enter()
-              .append("svg:a")
-              .attr("class", "car_link")
-              .attr("xlink:href", function(d) {
-                    return url_root + d.url;
-              })
-              .attr("target", "_blank")
-              .append("g")
-              .attr("class", "car_subcontainer")
-              .each(function (d, i) {
-                var car = this.appendChild(importedNode.cloneNode(true));
-                if (d.delta>1000) {
-                  fill = goodColor
-                }
-                else{
-                  fill = badColor
-                }
-
-                $($(car).children()[3].children).attr("fill", fill)
-              });
-
-
-            cl.exit().remove();
-
-
-
-            cl
-              .attr("transform", function(d, i){
-                return "translate(" + (xScale(d.year) - carWidth/2) + ","
-                + (yScale(d.miles) - carHeight/2) + ")"
-                + " scale(" + carScale + ")";
-              })
-              .transition().style("opacity")
-
-
-
-
-            $('.car_subcontainer').tipsy({
-              gravity: 'w',
-              html: true,
-              title: function() {
-                return "$" + Math.round(this.__data__.price/100)/10 + "K";}
-            });
-
-
-
-            //$( "#list-container").append("<svg src=" + importedNode + "></svg>")
-            $( "#table_body" ).html("")
-            var textToInsert = [];
-            for (var i = data.length-1; i >= 0; i--) {
-              var c = 0;
-              textToInsert[c++] = "<tr url=" + url_root + data[i].url + ">";
-              textToInsert[c++] = "<td>" + sign_char(data[i].delta) + "$" + commaSeparateNumber(Math.abs(Math.round(data[i].delta)) + "</td>"
-              textToInsert[c++] = "<td>" + "$"+ commaSeparateNumber(data[i].price) + "</td>"
-              textToInsert[c++] = "<td>" + data[i].year + "</td>"
-              textToInsert[c++] = "<td>" + kstyle_number(data[i].miles) + "</td>"
-              textToInsert[c++] = "</tr>"
-              console.log(textToInsert.join(''))
-              $( "#table_body" ).append(textToInsert.join(''));
-            }
-
-            $('.table > tbody > tr').click(function() {
-              console.log($(this))
-              console.log($(this).attr("url"))
-              window.open($(this).attr("url"),'_blank')
-            })
-
-            $('.table > tbody > tr').mouseenter(function() {
-              $(this).removeClass("row-unhover").addClass("row-hover")
-            })
-
-            $('.table > tbody > tr').mouseleave(function() {
-              $(this).removeClass("row-hover").addClass("row-unhover")
-            })
-
-          } //update
-
-          $('.container-toggler').click(function(){
-            $('.container-toggle').hide();
-            $($(this).attr('data-container-id')).show();
-          });
-
-
-          //$('.dropdown-toggle').dropdown();
-
-
-          $('.model').click(function(){
-            model = $(this).attr('value')
-            $('#dropdown_title').html($(this).html());
-            update_display()
-          });
-
-
-
-
-
-          $('.splash-model').click(function(){
-            model = $(this).attr('value')
-            $('#ModelModal').modal('hide')
-            $('#dropdown_title').html($(this).html());
-            $('#list').click()
-            update_display()
-          });
-
-
-          $( "#slider-range" ).slider({
-            range: true,
-            min: 0,
-            max: 25000,
-            step: 500,
-            values: [ lo, hi ],
-            slide: function( event, ui ) {
-              lo = ui.values[0]
-              hi = ui.values[1]
-              $( "#amount" ).html( "$" + lo + " - " + "$" + hi);
-              update_display()
-            }
-          });
-
-          $( "#amount" ).html( "$" + $( "#slider-range" ).slider( "values", 0 ) + " - " +
-            "$" + $( "#slider-range" ).slider( "values", 1 ) );
-
-          $( ".ui-slider-handle.ui-state-focus" ).css("background-color", "#aaa")
-          $( ".ui-slider-handle.ui-state-focus" ).css("color", "#aaa")
-          $( ".ui-slider-handle.ui-state-focus" ).css("background", "#aaa")
-
-
-
-        }); //d3.xml
-
-      }); //getJson
-
-      $(window).load(function(){
-          $('#ModelModal').modal('show');
-      });
-
-
-    </script>
 
 
     <div class="modal fade" id="ModelModal" data-backdrop="static">
@@ -399,8 +131,9 @@
                   <a class="dropdown-toggle" id="choose-model" role="button" data-toggle="dropdown" href="#">Select a model<b class="caret"></b></a>
                   <ul id="select-car" class="dropdown-menu" role="menu" aria-labelledby="drop1">
                     <li role="presentation"><a class="splash-model" role="menuitem" tabindex="-1" value="accord" href="javascript:void(0);">Honda Accord</a></li>
-                    <li role="presentation"><a class="splash-model" role="menuitem" tabindex="-1" value="camry" href="javascript:void(0)">Toyota Camry</a></li>
                     <li role="presentation"><a class="splash-model" role="menuitem" tabindex="-1" value="civic" href="javascript:void(0);">Honda Civic</a></li>
+                    <li role="presentation"><a class="splash-model" role="menuitem" tabindex="-1" value="camry" href="javascript:void(0)">Toyota Camry</a></li>
+                    <li role="presentation"><a class="splash-model" role="menuitem" tabindex="-1" value="corolla" href="javascript:void(0)">Toyota Corolla</a></li>
                   </ul>
                 </li>
               </ul>
