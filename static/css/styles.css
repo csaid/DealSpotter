@@ -1,0 +1,112 @@
+body {
+  padding-top: 10px;
+}
+.starter-template {
+  padding: 0 0;
+  text-align: center;
+}
+
+.centered-pills { text-align:center; }
+.centered-pills ul.nav-pills { display:inline-block; }
+.centered-pills li { display:inline; }
+.centered-pills a { float:left; }
+
+.modal-small {
+    width:350px;
+}
+
+td {
+  text-align:right;
+  padding-right:55px !important;
+  padding-left:55px !important;
+
+}
+
+th {
+  text-align:right;
+  padding-right:55px !important;
+  padding-left:55px !important;
+
+}
+
+.pos_savings {
+  font-weight: bold;
+  color: #39AC3F;
+}
+
+.neg_savings {
+  font-weight: bold;
+  color: #B13232;
+}
+
+.header h3 {
+  padding-bottom: 0;
+}
+
+.row-hover {
+  background-color: #ccc;
+  cursor: pointer;
+}
+
+.row-unhover {
+  background-color: white;
+  cursor: default;
+}
+
+
+.car_subcontainer {
+  cursor: pointer;
+}
+
+.center {
+     float: none;
+     margin-left: auto;
+     margin-right: auto;
+     display: block
+}
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 16px;
+    fill: #999999;
+}
+
+.axis_label {
+    font-family: sans-serif;
+    font-size: 16px;
+    fill: #999999;
+}
+
+.car {
+    float: none;
+    margin: auto;
+    display: block;
+}
+
+
+.ui-slider-range {
+    background: #ccc
+}
+
+.ui-slider-handle {
+    border-color: #bbbbbb
+}
+
+.ui-widget-content {
+    border-color: #aaaaaa
+}
+
+
+.container-toggle {
+    display: none;
+    height: 400px;
+    width: 700px;
+    padding: 0;
+    margin: 0;
+}
