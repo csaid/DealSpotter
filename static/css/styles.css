@@ -58,6 +58,10 @@ th {
   cursor: pointer;
 }
 
+.contact {
+     width: 300px;
+}
+
 .center {
      float: none;
      margin-left: auto;
