@@ -124,13 +124,13 @@ def main():
 
     # Exclude outliers
     full = exclude_uni_outliers(full, 'year', 1996, 2013)
-    full = exclude_uni_outliers(full, 'miles', 1000, 250000)
+    full = exclude_uni_outliers(full, 'miles', 1000, 210000)
     full = exclude_uni_outliers(full, 'price', 1000, 50000)
     full = exclude_biv_outliers(full, 'year', 'miles')
 
     # Only show most recent posts on DealSpotter
     full = full.sort('date', ascending=False)
-    num_on_web = 100
+    num_on_web = 150
     full['on_web'] = [True if i <
                       num_on_web else False for i in range(0, len(full))]
 
