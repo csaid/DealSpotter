@@ -23,7 +23,7 @@ def data_func():
         db="carsdb",
         cursorclass=MySQLdb.cursors.DictCursor)
     cur = conn.cursor()
-    cmd = "SELECT * FROM priced WHERE date in (SELECT * FROM (SELECT date FROM priced WHERE model in ('accord', 'civic', 'camry', 'corolla') ORDER BY date LIMIT 180) as t) ORDER BY delta DESC;"
+    cmd = "SELECT * FROM priced WHERE date in (SELECT * FROM (SELECT date FROM priced WHERE model in ('accord', 'civic', 'camry', 'corolla') ORDER BY date) as t) ORDER BY delta DESC;"
 
     cur.execute(cmd)
     data = cur.fetchall()
