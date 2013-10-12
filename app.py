@@ -11,9 +11,10 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
-@app.route('/about')
+
+@app.route('/slides')
 def about():
-    return render_template('about.html')
+    return render_template('slides.html')
 
 @app.route('/data', methods=['GET'])
 def data_func():
